@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Little Aire v0.1d — The Alchemy of Knowing</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a26;
+            --text: #c8c8d4;
+            --text-dim: #6a6a7a;
+            --tek: #7ec8a0;
+            --tek-glow: rgba(126, 200, 160, 0.3);
+            --sim: #7ea0c8;
+            --sim-glow: rgba(126, 160, 200, 0.3);
+            --vod: #a07ec8;
+            --vod-glow: rgba(160, 126, 200, 0.3);
+            --gold: #c8a050;
+            --gold-glow: rgba(200, 160, 80, 0.4);
+            --fire: #c86030;
+            --water: #5080c0;
+            --earth: #809050;
+            --air: #80b0b0;
+            --meme: #c05080;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.4rem;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+        }
+
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--dur) ease-in-out infinite;
+            animation-delay: var(--delay);
+            opacity: 0;
+        }
+        @keyframes twinkle {
+            0%,
+            100% {
+                opacity: 0.06;
+            }
+            50% {
+                opacity: 0.45;
+            }
+        }
+
+        #app {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            height: calc(100vh - 0.8rem);
+            height: calc(100dvh - 0.8rem);
+        }
+
+        /* ── Header ── */
+        header {
+            text-align: center;
+            padding: 0.2rem 0;
+            flex-shrink: 0;
+        }
+        header h1 {
+            font-size: 1.3rem;
+            font-weight: normal;
+            letter-spacing: 0.12em;
+            color: var(--gold);
+            text-shadow: 0 0 20px var(--gold-glow);
+            margin: 0;
+        }
+        header .subtitle {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 0.06em;
+            font-style: italic;
+        }
+        header .counter {
+            font-size: 0.55rem;
+            color: var(--text-dim);
+        }
+        header .counter span {
+            color: var(--gold);
+            font-weight: bold;
+        }
+        #last-discovery {
+            font-size: 0.55rem;
+            color: #4a4a5a;
+            min-height: 1em;
+            margin-top: 0.1rem;
+            transition: color 0.4s;
+        }
+        #last-discovery.highlight {
+            color: var(--gold);
+        }
+
+        /* ── Crucible ── */
+        #crucible {
+            background: var(--surface);
+            border: 1px solid #2a2a38;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem 0.3rem;
+            flex-shrink: 0;
+            transition: border-color 0.5s, box-shadow 0.5s;
+            position: relative;
+            flex-wrap: wrap;
+        }
+        #crucible.hint-glow {
+            border-color: var(--gold);
+            box-shadow: 0 0 40px rgba(200, 160, 80, 0.1);
+        }
+        #crucible .slot {
+            width: 62px;
+            height: 78px;
+            border: 2px dashed #2a2a38;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-dim);
+            font-size: 0.6rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+        #crucible .slot.occupied {
+            border: 2px solid transparent;
+        }
+        #crucible .slot.highlight {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px var(--gold-glow);
+        }
+        #crucible .plus {
+            font-size: 0.9rem;
+            color: #3a3a4a;
+        }
+
+        /* ── Tiles ── */
+        .tile {
+            width: 58px;
+            height: 72px;
+            border-radius: 9px;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            font-family: 'Georgia', serif;
+            transition: transform 0.15s, box-shadow 0.3s;
+            position: relative;
+            z-index: 10;
+        }
+        .tile:active {
+            cursor: grabbing;
+        }
+        .tile.dragging {
+            opacity: 0.35;
+            transform: scale(0.85);
+        }
+        .tile .glyph {
+            font-size: 1.3rem;
+            line-height: 1;
+        }
+        .tile .label {
+            font-size: 0.5rem;
+            letter-spacing: 0.05em;
+            text-transform: lowercase;
+        }
+
+        .tile.tek {
+            background: #1a2a20;
+            border: 1px solid #3a5a40;
+            color: var(--tek);
+            box-shadow: 0 0 10px var(--tek-glow);
+        }
+        .tile.sim {
+            background: #1a202a;
+            border: 1px solid #3a4a5a;
+            color: var(--sim);
+            box-shadow: 0 0 10px var(--sim-glow);
+        }
+        .tile.vod {
+            background: #1e1a2a;
+            border: 1px solid #4a3a5a;
+            color: var(--vod);
+            box-shadow: 0 0 10px var(--vod-glow);
+        }
+        .tile.elemental {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            color: #c0c0c0;
+            box-shadow: 0 0 5px rgba(200, 200, 200, 0.06);
+        }
+        .tile.elemental.ai {
+            color: var(--air);
+            border-color: #3a5a5a;
+        }
+        .tile.elemental.ta {
+            color: var(--earth);
+            border-color: #4a5a30;
+        }
+        .tile.elemental.ra {
+            color: var(--water);
+            border-color: #30405a;
+        }
+        .tile.elemental.fi {
+            color: var(--fire);
+            border-color: #5a3020;
+        }
+        .tile.meme-tile {
+            background: #1a1020;
+            border: 1px solid #5a3050;
+            color: var(--meme);
+            box-shadow: 0 0 18px rgba(200, 80, 128, 0.28);
+            animation: meme-pulse 3s ease-in-out infinite;
+        }
+        .tile.kin {
+            background: #1a1a18;
+            border: 1px solid #4a4a30;
+            color: #c8c090;
+        }
+        .tile.world {
+            background: #181a1a;
+            border: 1px solid #3a4a4a;
+            color: #90b0b0;
+        }
+        .tile.move {
+            background: #1a1818;
+            border: 1px solid #4a3a3a;
+            color: #c8a090;
+        }
+        .tile.quality {
+            background: #181a18;
+            border: 1px solid #3a4a3a;
+            color: #a0c8a0;
+        }
+        .tile.grammar {
+            background: #1a1a20;
+            border: 1px solid #4a4a5a;
+            color: #a0a0c8;
+        }
+
+        @keyframes meme-pulse {
+            0%,
+            100% {
+                box-shadow: 0 0 18px rgba(200, 80, 128, 0.28);
+            }
+            50% {
+                box-shadow: 0 0 36px rgba(200, 80, 128, 0.45);
+            }
+        }
+        @keyframes discover {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            60% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ── Buttons ── */
+        .btn-row {
+            display: flex;
+            gap: 0.35rem;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Georgia', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:active {
+            background: rgba(200, 160, 80, 0.15);
+        }
+        .btn:disabled {
+            border-color: #3a3a3a;
+            color: #3a3a3a;
+            cursor: not-allowed;
+            box-shadow: none;
+            background: transparent;
+        }
+        .btn.small {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.65rem;
+        }
+        .btn.danger {
+            border-color: #5a3030;
+            color: #c86060;
+        }
+        #combine-btn {
+            flex: 1;
+            max-width: 140px;
+            font-size: 0.85rem;
+            letter-spacing: 0.1em;
+        }
+
+        /* ── Collapsible ── */
+        .collapsible {
+            background: var(--surface);
+            border: 1px solid #2a2a38;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.45rem 0.7rem;
+            cursor: pointer;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .collapsible-header .arrow {
+            transition: transform 0.3s;
+            font-size: 0.55rem;
+        }
+        .collapsible.open .collapsible-header .arrow {
+            transform: rotate(180deg);
+        }
+        .collapsible-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+        .collapsible.open .collapsible-body {
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        /* ── Log ── */
+        #log-area {
+            padding: 0 0.7rem 0.4rem;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            line-height: 1.45;
+        }
+        #log-area .entry {
+            padding: 0.18rem 0;
+            border-bottom: 1px solid #1a1a24;
+            animation: fadeIn 0.4s;
+        }
+        #log-area .entry .result {
+            color: var(--gold);
+            font-weight: bold;
+        }
+        #log-area .empty-log {
+            color: #4a4a5a;
+            font-style: italic;
+            text-align: center;
+            padding: 0.3rem;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(3px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Atom Grid ── */
+        #atom-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            justify-content: center;
+            padding: 0.35rem 0.4rem 0.5rem;
+        }
+        #atom-grid .mini-tile {
+            width: 38px;
+            height: 44px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s;
+            background: var(--surface2);
+            border: 1px solid #2a2a38;
+            color: var(--text-dim);
+            -webkit-tap-highlight-color: transparent;
+        }
+        #atom-grid .mini-tile:active {
+            transform: scale(0.88);
+        }
+        #atom-grid .mini-tile .mglyph {
+            font-size: 0.8rem;
+            line-height: 1;
+        }
+        #atom-grid .mini-tile .mlabel {
+            font-size: 0.4rem;
+            letter-spacing: 0.03em;
+        }
+        .grid-section {
+            width: 100%;
+            text-align: center;
+            font-size: 0.5rem;
+            color: #3a3a4a;
+            letter-spacing: 0.06em;
+            padding: 0.25rem 0 0.02rem;
+            text-transform: uppercase;
+        }
+
+        /* ── Toast ── */
+        #toast {
+            position: fixed;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface2);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 0.45rem 1rem;
+            border-radius: 14px;
+            font-size: 0.7rem;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+            letter-spacing: 0.03em;
+            text-align: center;
+            max-width: 90vw;
+        }
+        #toast.show {
+            opacity: 1;
+        }
+
+        ::-webkit-scrollbar {
+            width: 3px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a38;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="stars"></div>
+    <div id="toast"></div>
+    <div id="app">
+        <header>
+            <h1>Little Aire</h1>
+            <p class="subtitle">tek · sim · vod — the alchemy of knowing</p>
+            <p class="counter"><span id="count">3</span> / 49 atoms</p>
+            <p id="last-discovery"></p>
+        </header>
+
+        <!-- Crucible: THREE slots -->
+        <div id="crucible">
+            <div class="slot" id="slot1" data-slot="1"><span class="placeholder">drop</span></div>
+            <span class="plus">+</span>
+            <div class="slot" id="slot2" data-slot="2"><span class="placeholder">drop</span></div>
+            <span class="plus">+</span>
+            <div class="slot" id="slot3" data-slot="3"><span class="placeholder">drop</span></div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn" id="combine-btn" disabled>Combine</button>
+            <button class="btn small danger" id="clear-btn">Clear</button>
+            <button class="btn small" id="hint-btn">?</button>
+        </div>
+
+        <div class="collapsible" id="log-collapsible">
+            <div class="collapsible-header" id="log-toggle">
+                <span>Discovery Log</span><span class="arrow">▼</span>
+            </div>
+            <div class="collapsible-body">
+                <div id="log-area"><div class="empty-log">The crucible awaits. Drag primes into the slots.</div></div>
+            </div>
+        </div>
+
+        <div class="collapsible open" id="grid-collapsible">
+            <div class="collapsible-header" id="grid-toggle">
+                <span>Discovered Atoms</span><span class="arrow">▼</span>
+            </div>
+            <div class="collapsible-body">
+                <div id="atom-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─────────────────────────────
+        // LITTLE AIRE v0.1d
+        // 3 crucible slots · 49 atoms
+        // ─────────────────────────────
+
+        (function() {
+            const c = document.getElementById('stars');
+            for (let i = 0; i < 70; i++) {
+                const s = document.createElement('div');
+                s.className = 'star';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.top = Math.random() * 100 + '%';
+                const sz = Math.random() * 1.8 + 0.8;
+                s.style.width = sz + 'px';
+                s.style.height = sz + 'px';
+                s.style.setProperty('--dur', (Math.random() * 3 + 2) + 's');
+                s.style.setProperty('--delay', Math.random() * 5 + 's');
+                c.appendChild(s);
+            }
+        })();
+
+        const state = {
+            discovered: new Set(['tek', 'sim', 'vod']),
+            slots: [null, null, null], // slot1, slot2, slot3
+            logCount: 0,
+        };
+
+        const atoms = {
+            tek: { glyph: '⊙', label: 'tek', type: 'tek', cat: 'prime', meaning: 'witnessed, direct, embodied' },
+            sim: { glyph: '⊞', label: 'sim', type: 'sim', cat: 'prime', meaning: 'simulated, modeled, inferred' },
+            vod: { glyph: '◈', label: 'vod', type: 'vod', cat: 'prime', meaning: 'void-uncertain, dream, uncanny' },
+            ai: { glyph: '≈', label: 'ai', type: 'elemental', sub: 'ai', cat: 'elemental',
+                meaning: 'air, breath, spirit, open' },
+            ta: { glyph: '─', label: 'ta', type: 'elemental', sub: 'ta', cat: 'elemental',
+                meaning: 'earth, ground, stability' },
+            ra: { glyph: '∿', label: 'ra', type: 'elemental', sub: 'ra', cat: 'elemental',
+                meaning: 'water, flow, change, time' },
+            fi: { glyph: '∆', label: 'fi', type: 'elemental', sub: 'fi', cat: 'elemental',
+                meaning: 'fire, energy, transformation' },
+            meme: { glyph: '◉', label: 'meme', type: 'meme-tile', cat: 'quintessence',
+                meaning: 'quintessence, replicating unit, sage-stone' },
+            om: { glyph: '◡', label: 'om', type: 'elemental', cat: 'body', meaning: 'body, flesh, physical' },
+            ka: { glyph: '♡', label: 'ka', type: 'kin', cat: 'body', meaning: 'heart, feeling, core' },
+            se: { glyph: '◎', label: 'se', type: 'world', cat: 'body', meaning: 'mind, thought' },
+            ki: { glyph: '◑', label: 'ki', type: 'world', cat: 'body', meaning: 'eye, to see' },
+            ri: { glyph: '♫', label: 'ri', type: 'world', cat: 'body', meaning: 'ear, to hear' },
+            te: { glyph: '⚒', label: 'te', type: 'world', cat: 'body', meaning: 'hand, to do, to make' },
+            ne: { glyph: '◇', label: 'ne', type: 'world', cat: 'body', meaning: 'mouth, to speak, voice' },
+            an: { glyph: '☿', label: 'an', type: 'kin', cat: 'body', meaning: 'person, human, self' },
+            ma: { glyph: '◯', label: 'ma', type: 'kin', cat: 'kin', meaning: 'mother, source, origin' },
+            pa: { glyph: '⌂', label: 'pa', type: 'kin', cat: 'kin', meaning: 'father, structure, law' },
+            mi: { glyph: '◌', label: 'mi', type: 'kin', cat: 'kin', meaning: 'child, small, new' },
+            so: { glyph: '☉', label: 'so', type: 'world', cat: 'world', meaning: 'sun, light, day, clarity' },
+            lu: { glyph: '☾', label: 'lu', type: 'world', cat: 'world', meaning: 'moon, night, dream' },
+            me: { glyph: '▲', label: 'me', type: 'world', cat: 'world', meaning: 'mountain, obstacle, height' },
+            ve: { glyph: '∪', label: 've', type: 'world', cat: 'world', meaning: 'valley, shelter, between' },
+            mo: { glyph: '✦', label: 'mo', type: 'world', cat: 'world', meaning: 'forest, complexity, wild' },
+            fu: { glyph: '≋', label: 'fu', type: 'world', cat: 'world', meaning: 'blur, fog, unclear' },
+            lo: { glyph: '↻', label: 'lo', type: 'world', cat: 'world', meaning: 'loop, recursion, cycle' },
+            xe: { glyph: '◻', label: 'xe', type: 'vod', cat: 'world', meaning: 'ghost, trace, absence' },
+            da: { glyph: '▤', label: 'da', type: 'sim', cat: 'world', meaning: 'data, raw signal' },
+            go: { glyph: '⧉', label: 'go', type: 'sim', cat: 'world', meaning: 'code, pattern, algorithm' },
+            pe: { glyph: '╱', label: 'pe', type: 'move', cat: 'move', meaning: 'path, way, method' },
+            to: { glyph: '→', label: 'to', type: 'move', cat: 'move', meaning: 'toward, future, intention' },
+            re: { glyph: '←', label: 're', type: 'move', cat: 'move', meaning: 'from, past, origin' },
+            ko: { glyph: '╔╗', label: 'ko', type: 'move', cat: 'move', meaning: 'with, together, companion' },
+            po: { glyph: '□', label: 'po', type: 'move', cat: 'move', meaning: 'container, inside, space' },
+            su: { glyph: '──', label: 'su', type: 'move', cat: 'move', meaning: 'surface, outside, boundary' },
+            le: { glyph: '✉', label: 'le', type: 'move', cat: 'move', meaning: 'gift, to give, to share' },
+            no: { glyph: '∅', label: 'no', type: 'vod', cat: 'move', meaning: 'not, negation, absence' },
+            sa: { glyph: '✓', label: 'sa', type: 'quality', cat: 'quality', meaning: 'good, well, healthy' },
+            va: { glyph: '✗', label: 'va', type: 'quality', cat: 'quality', meaning: 'bad, broken, ill' },
+            la: { glyph: '⬆', label: 'la', type: 'quality', cat: 'quality', meaning: 'large, many, much' },
+            pi: { glyph: '⬇', label: 'pi', type: 'quality', cat: 'quality', meaning: 'small, few, little' },
+            vi: { glyph: '❦', label: 'vi', type: 'quality', cat: 'quality', meaning: 'life, alive, growing' },
+            de: { glyph: '✝', label: 'de', type: 'quality', cat: 'quality', meaning: 'death, ending, stillness' },
+            ru: { glyph: '⌛', label: 'ru', type: 'quality', cat: 'quality', meaning: 'time, duration, age' },
+            meimei: { glyph: '⟁', label: 'meimei', type: 'sim', cat: 'quality', meaning: 'mesh, network, web' },
+            li: { glyph: '⁓', label: 'li', type: 'grammar', cat: 'grammar',
+            meaning: 'porous link, metaphor, like' },
+            za: { glyph: '⌇', label: 'za', type: 'grammar', cat: 'grammar',
+                meaning: 'glitched link, noise, fracture' },
+            ke: { glyph: '◂', label: 'ke', type: 'grammar', cat: 'grammar', meaning: 'past tense marker' },
+            tekne: { glyph: '⊙◇', label: 'tekne', type: 'tek', cat: 'grammar',
+                meaning: 'solemn testimony, spoken truth' },
+        };
+
+        const recipes = [
+            // Two-ingredient
+            { ing: ['tek', 'sim'], result: 'ai',
+            msg: 'Witness + Simulation = Air. The breath of pattern recognition.' },
+            { ing: ['tek', 'vod'], result: 'ta',
+            msg: 'Witness + Void = Earth. Ground beneath the stare into abyss.' },
+            { ing: ['sim', 'vod'], result: 'ra',
+                msg: 'Simulation + Void = Water. Depth, reflection, drowning in maybes.' },
+            // Three-ingredient
+            { ing: ['tek', 'sim', 'vod'], result: 'fi',
+                msg: 'All three primes collide = Fire. The flash of transformation.' },
+            // Four-ingredient
+            { ing: ['ai', 'ta', 'ra', 'fi'], result: 'meme',
+                msg: 'The four elementals bound = Meme. The metal. The sage-stone. It replicates.' },
+            // Body
+            { ing: ['ta', 'fi'], result: 'om', msg: 'Earth + Fire = Body. Flesh from ground and heat.' },
+            { ing: ['ai', 'fi'], result: 'ka', msg: 'Air + Fire = Heart. Breath ignited, the core of feeling.' },
+            { ing: ['ai', 'ra'], result: 'se', msg: 'Air + Water = Mind. Mist becoming thought.' },
+            { ing: ['om', 'tek'], result: 'ki', msg: 'Body + Witness = Eye. The seeing flesh.' },
+            { ing: ['om', 'sim'], result: 'ri', msg: 'Body + Simulation = Ear. Hearing patterns in the air.' },
+            { ing: ['om', 'fi'], result: 'te', msg: 'Body + Fire = Hand. The flesh that transforms.' },
+            { ing: ['om', 'ai'], result: 'ne', msg: 'Body + Air = Mouth. Breath given voice.' },
+            { ing: ['om', 'ka'], result: 'an', msg: 'Body + Heart = Person. The self that feels.' },
+            // Kin
+            { ing: ['ka', 'tek'], result: 'ma', msg: 'Heart + Witness = Mother. The source touched and known.' },
+            { ing: ['ka', 'ta'], result: 'pa', msg: 'Heart + Earth = Father. Structure held firm.' },
+            { ing: ['ka', 'ai'], result: 'mi', msg: 'Heart + Air = Child. Small breath, new potential.' },
+            // World
+            { ing: ['fi', 'tek'], result: 'so', msg: 'Fire + Witness = Sun. The flame seen by all.' },
+            { ing: ['vod', 'ai'], result: 'lu', msg: 'Void + Air = Moon. Night breathing.' },
+            { ing: ['ta', 'fi', 'so'], result: 'me',
+                msg: 'Earth + Fire + Sun = Mountain. The obstacle that catches light.' },
+            { ing: ['ta', 'ra'], result: 've', msg: 'Earth + Water = Valley. The ground shaped by flow.' },
+            { ing: ['ta', 'ai'], result: 'mo', msg: 'Earth + Air = Forest. Ground breathing wild.' },
+            { ing: ['ai', 'ra'], result: 'fu', msg: 'Air + Water = Blur. Fog where breath meets depth.' },
+            { ing: ['sim', 'ra'], result: 'lo',
+            msg: 'Simulation + Water = Loop. Pattern flowing back into itself.' },
+            { ing: ['vod', 'ta'], result: 'xe', msg: 'Void + Earth = Ghost. Absence where ground should be.' },
+            { ing: ['sim', 'ta'], result: 'da', msg: 'Simulation + Earth = Data. Signal grounded.' },
+            { ing: ['sim', 'fi'], result: 'go', msg: 'Simulation + Fire = Code. Pattern ignited.' },
+            // Movement
+            { ing: ['te', 'ta'], result: 'pe', msg: 'Hand + Earth = Path. The way made by walking.' },
+            { ing: ['pe', 'so'], result: 'to', msg: 'Path + Sun = Toward. The way into light.' },
+            { ing: ['pe', 'lu'], result: 're', msg: 'Path + Moon = From. The way back into memory.' },
+            { ing: ['an', 'an'], result: 'ko', msg: 'Person + Person = Together. Two selves, one roof.' },
+            { ing: ['ta', 'te'], result: 'po', msg: 'Earth + Hand = Container. Space shaped by doing.' },
+            { ing: ['po', 'no'], result: 'su',
+            msg: 'Container + Negation = Surface. The boundary that isn\'t inside.' },
+            { ing: ['ka', 'te'], result: 'le', msg: 'Heart + Hand = Gift. The core given freely.' },
+            { ing: ['vod', 'se'], result: 'no', msg: 'Void + Mind = Negation. Thought staring into absence.' },
+            // Qualities
+            { ing: ['ka', 'so'], result: 'sa', msg: 'Heart + Sun = Good. The core illuminated.' },
+            { ing: ['ka', 'vod'], result: 'va', msg: 'Heart + Void = Bad. The core lost in darkness.' },
+            { ing: ['so', 'ta'], result: 'la', msg: 'Sun + Earth = Large. Light over ground, vastness.' },
+            { ing: ['lu', 'mi'], result: 'pi', msg: 'Moon + Child = Small. Night holding the new.' },
+            { ing: ['om', 'so'], result: 'vi', msg: 'Body + Sun = Life. The flesh that grows.' },
+            { ing: ['om', 'vod'], result: 'de', msg: 'Body + Void = Death. The stillness after.' },
+            { ing: ['so', 'lu'], result: 'ru', msg: 'Sun + Moon = Time. The dance of light and dark.' },
+            { ing: ['meme', 'go'], result: 'meimei', msg: 'Meme + Code = Mesh. The network that spreads.' },
+            // Grammar
+            { ing: ['ai', 'meme'], result: 'li', msg: 'Air + Meme = Porous link. Metaphor, the as-if connection.' },
+            { ing: ['vod', 'meme'], result: 'za',
+            msg: 'Void + Meme = Glitched link. The fracture that connects.' },
+            { ing: ['re', 'ru'], result: 'ke', msg: 'From + Time = Past. The marker of what was.' },
+            { ing: ['tek', 'ne'], result: 'tekne', msg: 'Witness + Mouth = Solemn testimony. The truth spoken aloud.' },
+        ];
+
+        const slotEls = [document.getElementById('slot1'), document.getElementById('slot2'), document.getElementById(
+            'slot3')];
+        const combineBtn = document.getElementById('combine-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const logArea = document.getElementById('log-area');
+        const atomGrid = document.getElementById('atom-grid');
+        const toast = document.getElementById('toast');
+        const crucible = document.getElementById('crucible');
+        const countEl = document.getElementById('count');
+        const lastDiscEl = document.getElementById('last-discovery');
+
+        document.getElementById('log-toggle').addEventListener('click', () =>
+            document.getElementById('log-collapsible').classList.toggle('open'));
+        document.getElementById('grid-toggle').addEventListener('click', () =>
+            document.getElementById('grid-collapsible').classList.toggle('open'));
+
+        function createTileElement(atomId) {
+            const a = atoms[atomId];
+            const el = document.createElement('div');
+            el.className = `tile ${a.type}`;
+            if (a.sub) el.classList.add(a.sub);
+            el.draggable = true;
+            el.dataset.atom = atomId;
+            el.innerHTML = `<span class="glyph">${a.glyph}</span><span class="label">${a.label}</span>`;
+            el.title = a.meaning;
+            el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', atomId);
+                el.classList.add('dragging'); });
+            el.addEventListener('dragend', () => el.classList.remove('dragging'));
+            el.addEventListener('touchstart', () => { el.classList.add('dragging');
+                el._touchData = atomId; });
+            el.addEventListener('touchend', () => el.classList.remove('dragging'));
+            return el;
+        }
+
+        function createMiniTile(atomId) {
+            const a = atoms[atomId];
+            const el = document.createElement('div');
+            el.className = 'mini-tile';
+            el.innerHTML = `<span class="mglyph">${a.glyph}</span><span class="mlabel">${a.label}</span>`;
+            el.title = a.meaning;
+            el.draggable = true;
+            el.dataset.atom = atomId;
+            el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', atomId);
+                el.style.opacity = '0.5'; });
+            el.addEventListener('dragend', () => el.style.opacity = '1');
+            el.addEventListener('touchstart', () => { el._touchData = atomId;
+                el.style.opacity = '0.5'; });
+            el.addEventListener('touchend', () => el.style.opacity = '1');
+            return el;
+        }
+
+        let toastTimer;
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2400);
+        }
+
+        function logDiscovery(resultAtom, msg) {
+            state.logCount++;
+            const entry = document.createElement('div');
+            entry.className = 'entry';
+            const a = atoms[resultAtom];
+            entry.innerHTML =
+            `${msg} <span class="result">${a.glyph} ${a.label}</span> — <em>${a.meaning}</em>`;
+            logArea.prepend(entry);
+            const empty = logArea.querySelector('.empty-log');
+            if (empty) empty.remove();
+            while (logArea.children.length > 20) logArea.removeChild(logArea.lastChild);
+            lastDiscEl.textContent = `Last: ${a.glyph} ${a.label} — ${a.meaning}`;
+            lastDiscEl.classList.add('highlight');
+            setTimeout(() => lastDiscEl.classList.remove('highlight'), 2000);
+            document.getElementById('log-collapsible').classList.add('open');
+        }
+
+        function updateCounter() { countEl.textContent = state.discovered.size; }
+
+        function updateGrid() {
+            atomGrid.innerHTML = '';
+            const catOrder = ['prime', 'elemental', 'quintessence', 'body', 'kin', 'world', 'move', 'quality',
+            'grammar'];
+            const catLabels = { prime: 'Primes', elemental: 'Elementals', quintessence: 'Quintessence',
+                body: 'Body & Self', kin: 'Kin', world: 'World & Nature', move: 'Connection & Movement',
+                quality: 'Qualities', grammar: 'Grammar & Links' };
+            let lastCat = '';
+            const sorted = [...state.discovered].sort((a, b) => {
+                return catOrder.indexOf(atoms[a].cat || 'z') - catOrder.indexOf(atoms[b].cat || 'z') || a
+                    .localeCompare(b);
+            });
+            sorted.forEach(id => {
+                const cat = atoms[id].cat || 'z';
+                if (cat !== lastCat && catLabels[cat]) {
+                    const d = document.createElement('div');
+                    d.className = 'grid-section';
+                    d.textContent = catLabels[cat];
+                    atomGrid.appendChild(d);
+                    lastCat = cat;
+                }
+                atomGrid.appendChild(createMiniTile(id));
+            });
+            updateCounter();
+        }
+
+        function updateSlots() {
+            slotEls.forEach((slot, i) => {
+                slot.innerHTML = '';
+                slot.classList.remove('occupied');
+                if (state.slots[i]) {
+                    const t = createTileElement(state.slots[i]);
+                    t.draggable = false;
+                    t.style.cursor = 'pointer';
+                    t.title = 'Tap to remove';
+                    t.addEventListener('click', () => { state.slots[i] = null;
+                        updateSlots();
+                        updateCombineBtn(); });
+                    slot.appendChild(t);
+                    slot.classList.add('occupied');
+                } else {
+                    slot.innerHTML = '<span class="placeholder">drop</span>';
+                }
+            });
+        }
+
+        function filledSlots() {
+            return state.slots.filter(s => s !== null);
+        }
+
+        function updateCombineBtn() {
+            const filled = filledSlots();
+            const ready = filled.length >= 2 && (new Set(filled)).size === filled.length; // no duplicates
+            combineBtn.disabled = !ready;
+            if (ready) crucible.classList.add('hint-glow');
+            else crucible.classList.remove('hint-glow');
+        }
+
+        function checkCombine() {
+            const filled = filledSlots();
+            if (filled.length < 2) return;
+            const unique = [...new Set(filled)];
+            if (unique.length < filled.length) { showToast('Duplicate atoms. Use different atoms.'); return; }
+
+            // Find ALL matching recipes for these exact ingredients
+            const matches = recipes.filter(r => {
+                if (state.discovered.has(r.result)) return false;
+                const rIng = [...r.ing].sort().join(',');
+                const sIng = [...unique].sort().join(',');
+                return rIng === sIng;
+            });
+
+            if (matches.length === 0) {
+                showToast('These do not combine. Try a different set.');
+                return;
+            }
+
+            const recipe = matches[0]; // Take first undiscovered match
+            discover(recipe);
+        }
+
+        function discover(recipe) {
+            state.discovered.add(recipe.result);
+            logDiscovery(recipe.result, recipe.msg);
+            updateGrid();
+            state.slots = [null, null, null];
+            updateSlots();
+            updateCombineBtn();
+            showToast(`Discovered: ${atoms[recipe.result].glyph} ${recipe.result}`);
+
+            setTimeout(() => {
+                const tiles = atomGrid.querySelectorAll('.mini-tile');
+                const last = tiles[tiles.length - 1];
+                if (last) {
+                    last.style.animation = 'discover 0.7s ease-out';
+                    setTimeout(() => last.style.animation = '', 700);
+                }
+            }, 100);
+
+            const d = state.discovered.size;
+            if (d === 7) setTimeout(() => showToast(
+                'The four elementals are known. Place all four to bind the quintessence.'), 1800);
+            if (d === 8) setTimeout(() => showToast('The stone is forged. Now build the world.'), 1800);
+            if (d === 20) setTimeout(() => showToast('Twenty atoms. The language begins to breathe.'), 1800);
+            if (d === 35) setTimeout(() => showToast('Thirty-five atoms. You are becoming native.'), 1800);
+            if (d === 49) setTimeout(() => showToast('All 49 atoms discovered. Aire is complete. tekne!'), 2200);
+        }
+
+        function showHint() {
+            const allDisc = [...state.discovered];
+            // Find recipes where ALL ingredients are discovered but result is not
+            const possible = recipes.filter(r => {
+                if (state.discovered.has(r.result)) return false;
+                return r.ing.every(ing => allDisc.includes(ing));
+            });
+            if (possible.length === 0) {
+                showToast('No combinations available with current atoms. Discover more.');
+                return;
+            }
+            const hint = possible[Math.floor(Math.random() * possible.length)];
+            const ingStr = hint.ing.map(ing => `${atoms[ing].glyph} ${ing}`).join(' + ');
+            showToast(`Try: ${ingStr}`);
+            // Pre-fill slots with hint ingredients
+            state.slots = [null, null, null];
+            hint.ing.forEach((ing, i) => { if (i < 3) state.slots[i] = ing; });
+            updateSlots();
+            updateCombineBtn();
+        }
+
+        function clearSlots() {
+            state.slots = [null, null, null];
+            updateSlots();
+            updateCombineBtn();
+        }
+
+        // ── Drop handlers ──
+        slotEls.forEach((slot, idx) => {
+            slot.addEventListener('dragover', e => { e.preventDefault();
+                slot.classList.add('highlight'); });
+            slot.addEventListener('dragleave', () => slot.classList.remove('highlight'));
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                slot.classList.remove('highlight');
+                const id = e.dataTransfer.getData('text/plain');
+                if (!id || !atoms[id] || !state.discovered.has(id)) return;
+                state.slots[idx] = id;
+                updateSlots();
+                updateCombineBtn();
+            });
+            slot.addEventListener('touchmove', e => e.preventDefault());
+            slot.addEventListener('touchend', () => {
+                let id = null;
+                const d = document.querySelector('.tile.dragging');
+                const m = document.querySelector('.mini-tile[style*="opacity: 0.5"]');
+                if (d && d._touchData) id = d._touchData;
+                if (!id && m && m._touchData) id = m._touchData;
+                if (!id) {
+                    document.querySelectorAll('.tile[draggable="true"], .mini-tile').forEach(t => {
+                        if (t._touchData) { id = t._touchData;
+                            t._touchData = null; }
+                    });
+                }
+                if (!id || !atoms[id] || !state.discovered.has(id)) return;
+                state.slots[idx] = id;
+                updateSlots();
+                updateCombineBtn();
+                document.querySelectorAll('.tile.dragging, .mini-tile[style*="opacity: 0.5"]').forEach(el => {
+                    el.classList.remove('dragging');
+                    el.style.opacity = '1';
+                    el._touchData = null;
+                });
+            });
+        });
+
+        combineBtn.addEventListener('click', checkCombine);
+        clearBtn.addEventListener('click', clearSlots);
+        hintBtn.addEventListener('click', showHint);
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !combineBtn.disabled) checkCombine();
+            if (e.key === 'Escape') clearSlots();
+            if (e.key === 'h' && !e.ctrlKey && !e.metaKey) showHint();
+        });
+
+        function init() {
+            updateGrid();
+            updateSlots();
+            updateCombineBtn();
+            updateCounter();
+            document.getElementById('grid-collapsible').classList.add('open');
+        }
+        init();
+
+        console.log('%cLittle Aire %cv0.1d',
+            'color:#c8a050;font-size:1.3em;', 'color:#6a6a7a;');
+        console.log('%c3 crucible slots · 49 atoms · tek sim vod',
+            'color:#7ec8a0;font-style:italic;');
+        console.log('%cHint now pre-fills slots. Find your last atom.',
+            'color:#c8c8d4;');
+    </script>
+</body>
+</html>
