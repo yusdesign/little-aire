@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Little Aire — the alchemy of knowing</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a26;
+            --text: #c8c8d4;
+            --text-dim: #6a6a7a;
+            --tek: #7ec8a0;
+            --sim: #7ea0c8;
+            --vod: #a07ec8;
+            --gold: #c8a050;
+            --gold-glow: rgba(200, 160, 80, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Courier New', 'Fira Code', monospace;
+            min-height: 100vh;
+            padding: 0.4rem;
+        }
+
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--dur) ease-in-out infinite;
+            opacity: 0;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.05; }
+            50% { opacity: 0.4; }
+        }
+
+        #app {
+            position: relative;
+            z-index: 2;
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        /* Header */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: normal;
+            letter-spacing: 0.2em;
+            color: var(--gold);
+            text-shadow: 0 0 15px var(--gold-glow);
+        }
+        .subtitle {
+            font-size: 0.55rem;
+            color: var(--text-dim);
+        }
+        .menu-btn, .close-drawer {
+            background: none;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-size: 1.3rem;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-family: monospace;
+        }
+        .counter {
+            font-size: 0.55rem;
+            text-align: center;
+        }
+
+        /* Menu Drawer */
+        #menu-drawer {
+            position: fixed;
+            top: 0;
+            left: -85%;
+            width: 85%;
+            max-width: 340px;
+            height: 100%;
+            background: var(--surface);
+            border-right: 1px solid var(--gold);
+            z-index: 1000;
+            transition: left 0.2s;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        #menu-drawer.open { left: 0; }
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--gold);
+        }
+        .menu-section {
+            margin-bottom: 1.2rem;
+        }
+        .menu-section h3 {
+            font-size: 0.8rem;
+            color: var(--gold);
+            margin-bottom: 0.3rem;
+        }
+        .myth-short {
+            font-size: 0.65rem;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+            color: var(--text-dim);
+        }
+        .atom-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2rem;
+        }
+        .atom-item {
+            background: var(--surface2);
+            padding: 0.2rem;
+            font-size: 0.6rem;
+            width: calc(33% - 0.2rem);
+            text-align: center;
+        }
+        .periodic-category {
+            margin-bottom: 0.6rem;
+        }
+        .periodic-category h4 {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+        .rule-line {
+            font-size: 0.6rem;
+            margin-bottom: 0.2rem;
+        }
+        .reset-btn {
+            background: none;
+            border: 1px solid #c86060;
+            color: #c86060;
+            padding: 0.3rem;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 0.8rem;
+        }
+
+        /* Crucible */
+        #crucible {
+            background: var(--surface);
+            border: 1px solid #2a2a38;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            padding: 0.6rem;
+            flex-wrap: wrap;
+        }
+        .slot {
+            width: 58px;
+            height: 72px;
+            border: 2px dashed #2a2a38;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slot.occupied { border: 2px solid transparent; }
+        .plus { font-size: 0.8rem; color: #3a3a4a; }
+
+        .tile {
+            width: 54px;
+            height: 68px;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+        }
+        .tile .glyph { font-size: 1.4rem; }
+        .tile .label { font-size: 0.5rem; text-transform: lowercase; }
+
+        .tile.tek { background: #1a2a20; border: 1px solid #3a5a40; color: var(--tek); }
+        .tile.sim { background: #1a202a; border: 1px solid #3a4a5a; color: var(--sim); }
+        .tile.vod { background: #1e1a2a; border: 1px solid #4a3a5a; color: var(--vod); }
+        .tile.elemental { background: #1a1a1a; border: 1px solid #3a3a3a; color: #c0c0c0; }
+        .tile.kin { background: #1a1a18; border: 1px solid #4a4a30; color: #c8c090; }
+        .tile.world { background: #181a1a; border: 1px solid #3a4a4a; color: #90b0b0; }
+        .tile.move { background: #1a1818; border: 1px solid #4a3a3a; color: #c8a090; }
+        .tile.quality { background: #181a18; border: 1px solid #3a4a3a; color: #a0c8a0; }
+        .tile.grammar { background: #1a1a20; border: 1px solid #4a4a5a; color: #a0a0c8; }
+
+        .btn-row {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+        }
+        .btn {
+            padding: 0.4rem 0.8rem;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .btn:active { background: rgba(200, 160, 80, 0.15); }
+        .btn:disabled { border-color: #3a3a3a; color: #3a3a3a; cursor: not-allowed; }
+        #combine-btn { flex: 1; max-width: 100px; }
+        #hint-btn { width: 42px; }
+
+        .log-control {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0.2rem 0.3rem;
+        }
+        .log-control label { font-size: 0.55rem; display: flex; gap: 0.2rem; align-items: center; }
+
+        .collapsible {
+            background: var(--surface);
+            border: 1px solid #2a2a38;
+        }
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            border-bottom: 1px solid transparent;
+        }
+        .collapsible.open .collapsible-header { border-bottom-color: #2a2a38; }
+        .collapsible-body { max-height: 0; overflow: hidden; transition: max-height 0.25s; }
+        .collapsible.open .collapsible-body { max-height: 40vh; overflow-y: auto; }
+
+        #log-area {
+            padding: 0.3rem;
+            font-size: 0.6rem;
+        }
+        .log-entry {
+            padding: 0.2rem;
+            border-bottom: 1px solid #1a1a24;
+            cursor: pointer;
+        }
+        .log-entry .meaning-text {
+            color: var(--gold);
+            font-size: 0.55rem;
+            display: none;
+            margin-top: 0.1rem;
+        }
+        .log-entry.show-meaning .meaning-text { display: block; }
+
+        #atom-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.2rem;
+            padding: 0.3rem;
+        }
+        .mini-tile {
+            width: 42px;
+            height: 48px;
+            background: var(--surface2);
+            border: 1px solid #2a2a38;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .mini-tile:active { transform: scale(0.95); }
+        .mini-tile .mglyph { font-size: 1rem; }
+        .mini-tile .mlabel { font-size: 0.45rem; }
+
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface2);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 0.3rem 0.8rem;
+            font-size: 0.65rem;
+            z-index: 1100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+<div id="stars"></div>
+<div id="toast"></div>
+
+<div id="menu-drawer">
+    <div class="drawer-header">
+        <span style="color:var(--gold);">⋆ AIRE ⋆</span>
+        <button class="close-drawer" id="close-drawer">✕</button>
+    </div>
+    <div class="menu-section">
+        <div class="myth-short">
+            “Before Aire, silence. Then the star spoke: let there be a way to say how you know. 
+            Eyes became ears. The first word was ◈vod. And that was enough.” — Humanité: slow, deliberate, essence.
+        </div>
+    </div>
+    <div class="menu-section">
+        <h3>📖 ENTRY WORDS</h3>
+        <div id="entry-words-list" class="atom-list"></div>
+    </div>
+    <div class="menu-section">
+        <h3>🔬 PERIODIC TABLE</h3>
+        <div id="periodic-menu"></div>
+    </div>
+    <div class="menu-section">
+        <h3>⚙️ RULES</h3>
+        <div class="rule-line">• Drag atoms into slots → COMBINE</div>
+        <div class="rule-line">• tek + tek → tektek (double witness)</div>
+        <div class="rule-line">• an + an → ko (together)</div>
+        <div class="rule-line">• ma + X → mother of X, pa + X → father, mi + X → child</div>
+        <div class="rule-line">• 4th slot unlocks at 24 atoms</div>
+        <div class="rule-line">• New categories appear at each level</div>
+    </div>
+    <button id="reset-game-btn" class="reset-btn">⟳ RESET</button>
+</div>
+
+<div id="app">
+    <div class="header-row">
+        <div style="width:36px;"></div>
+        <header>
+            <h1>LITTLE AIRE</h1>
+            <div class="subtitle">tek · sim · vod — alchemy of knowing</div>
+        </header>
+        <button class="menu-btn" id="menu-btn">☰</button>
+    </div>
+    <div class="counter"><span id="count">3</span> / <span id="total">58</span> atoms</div>
+
+    <div id="crucible">
+        <div class="slot" id="slot1"></div>
+        <span class="plus">+</span>
+        <div class="slot" id="slot2"></div>
+        <span class="plus">+</span>
+        <div class="slot" id="slot3"></div>
+        <span class="plus" id="fourth-plus" style="display:none;">+</span>
+        <div class="slot" id="slot4" style="display:none;"></div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn" id="combine-btn" disabled>COMBINE</button>
+        <button class="btn" id="clear-btn">CLEAR</button>
+        <button class="btn" id="hint-btn">?</button>
+    </div>
+
+    <div class="collapsible" id="log-collapsible">
+        <div class="collapsible-header"><span>DISCOVERY LOG</span><span>▼</span></div>
+        <div class="collapsible-body">
+            <div class="log-control"><label><input type="checkbox" id="show-meanings"> SHOW MEANINGS</label></div>
+            <div id="log-area"><div class="log-entry">The crucible awaits.</div></div>
+        </div>
+    </div>
+
+    <div class="collapsible open" id="grid-collapsible">
+        <div class="collapsible-header"><span>DISCOVERED ATOMS</span><span>▼</span></div>
+        <div class="collapsible-body">
+            <div id="atom-grid"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // LITTLE AIRE — 01H
+    // 4th slot, leveling visuals, emoji, bug fixes, full recipe set
+    // ============================================================
+
+    const STORAGE_KEY = 'little-aire-01h';
+
+    // Full atom database (58 atoms, including emoji)
+    const atoms = {
+        tek: { glyph: '⊙', label: 'tek', type: 'tek', cat: 'prime', meaning: 'witnessed' },
+        sim: { glyph: '⊞', label: 'sim', type: 'sim', cat: 'prime', meaning: 'simulated' },
+        vod: { glyph: '◈', label: 'vod', type: 'vod', cat: 'prime', meaning: 'void' },
+        ai: { glyph: '≈', label: 'ai', type: 'elemental', cat: 'elemental', meaning: 'air' },
+        ta: { glyph: '─', label: 'ta', type: 'elemental', cat: 'elemental', meaning: 'earth' },
+        ra: { glyph: '∿', label: 'ra', type: 'elemental', cat: 'elemental', meaning: 'water' },
+        fi: { glyph: '∆', label: 'fi', type: 'elemental', cat: 'elemental', meaning: 'fire' },
+        meme: { glyph: '◉', label: 'meme', type: 'meme-tile', cat: 'quintessence', meaning: 'quintessence' },
+        om: { glyph: '◡', label: 'om', type: 'elemental', cat: 'body', meaning: 'body' },
+        ka: { glyph: '♡', label: 'ka', type: 'kin', cat: 'body', meaning: 'heart' },
+        se: { glyph: '◎', label: 'se', type: 'world', cat: 'body', meaning: 'mind' },
+        ki: { glyph: '◑', label: 'ki', type: 'world', cat: 'body', meaning: 'eye' },
+        ri: { glyph: '♫', label: 'ri', type: 'world', cat: 'body', meaning: 'ear' },
+        te: { glyph: '⚒', label: 'te', type: 'world', cat: 'body', meaning: 'hand' },
+        ne: { glyph: '◇', label: 'ne', type: 'world', cat: 'body', meaning: 'mouth' },
+        an: { glyph: '☿', label: 'an', type: 'kin', cat: 'body', meaning: 'person' },
+        fa: { glyph: '✋', label: 'fa', type: 'world', cat: 'body', meaning: 'touch' },
+        ma: { glyph: '◯', label: 'ma', type: 'kin', cat: 'kin', meaning: 'mother' },
+        pa: { glyph: '⌂', label: 'pa', type: 'kin', cat: 'kin', meaning: 'father' },
+        mi: { glyph: '◌', label: 'mi', type: 'kin', cat: 'kin', meaning: 'child' },
+        si: { glyph: '◍', label: 'si', type: 'kin', cat: 'kin', meaning: 'sibling' },
+        so: { glyph: '☉', label: 'so', type: 'world', cat: 'world', meaning: 'sun' },
+        lu: { glyph: '☾', label: 'lu', type: 'world', cat: 'world', meaning: 'moon' },
+        me: { glyph: '▲', label: 'me', type: 'world', cat: 'world', meaning: 'mountain' },
+        ve: { glyph: '∪', label: 've', type: 'world', cat: 'world', meaning: 'valley' },
+        mo: { glyph: '🌳', label: 'mo', type: 'world', cat: 'world', meaning: 'forest' },
+        fu: { glyph: '≋', label: 'fu', type: 'world', cat: 'world', meaning: 'blur' },
+        lo: { glyph: '↻', label: 'lo', type: 'world', cat: 'world', meaning: 'loop' },
+        xe: { glyph: '◻', label: 'xe', type: 'vod', cat: 'world', meaning: 'ghost' },
+        da: { glyph: '▤', label: 'da', type: 'sim', cat: 'world', meaning: 'data' },
+        go: { glyph: '⧉', label: 'go', type: 'sim', cat: 'world', meaning: 'code' },
+        pe: { glyph: '╱', label: 'pe', type: 'move', cat: 'move', meaning: 'path' },
+        to: { glyph: '→', label: 'to', type: 'move', cat: 'move', meaning: 'toward' },
+        re: { glyph: '←', label: 're', type: 'move', cat: 'move', meaning: 'from' },
+        ko: { glyph: '╔╗', label: 'ko', type: 'move', cat: 'move', meaning: 'together' },
+        po: { glyph: '□', label: 'po', type: 'move', cat: 'move', meaning: 'container' },
+        su: { glyph: '──', label: 'su', type: 'move', cat: 'move', meaning: 'surface' },
+        le: { glyph: '✉', label: 'le', type: 'move', cat: 'move', meaning: 'gift' },
+        no: { glyph: '∅', label: 'no', type: 'vod', cat: 'move', meaning: 'not' },
+        sa: { glyph: '✓', label: 'sa', type: 'quality', cat: 'quality', meaning: 'good' },
+        va: { glyph: '✗', label: 'va', type: 'quality', cat: 'quality', meaning: 'bad' },
+        la: { glyph: '⬆', label: 'la', type: 'quality', cat: 'quality', meaning: 'large' },
+        pi: { glyph: '⬇', label: 'pi', type: 'quality', cat: 'quality', meaning: 'small' },
+        vi: { glyph: '❦', label: 'vi', type: 'quality', cat: 'quality', meaning: 'life' },
+        de: { glyph: '✝', label: 'de', type: 'quality', cat: 'quality', meaning: 'death' },
+        ru: { glyph: '⌛', label: 'ru', type: 'quality', cat: 'quality', meaning: 'time' },
+        tektek: { glyph: '⊙⊙', label: 'tektek', type: 'tek', cat: 'prime', meaning: 'double witness' },
+        so_open: { glyph: '[', label: 'so', type: 'grammar', cat: 'grammar', meaning: 'open scope' },
+        os_close: { glyph: ']', label: 'os', type: 'grammar', cat: 'grammar', meaning: 'close scope' },
+        panda: { glyph: '🐼', label: 'panda', type: 'world', cat: 'world', meaning: 'gentle creature' }
+    };
+
+    // Recipes (full set, including fixes)
+    const recipes = [
+        { ing: ['tek', 'sim'], result: 'ai' },
+        { ing: ['tek', 'vod'], result: 'ta' },
+        { ing: ['sim', 'vod'], result: 'ra' },
+        { ing: ['tek', 'sim', 'vod'], result: 'fi' },
+        { ing: ['ai', 'ta', 'ra', 'fi'], result: 'meme', needs4Slots: true },
+        { ing: ['ta', 'fi'], result: 'om' },
+        { ing: ['ai', 'fi'], result: 'ka' },
+        { ing: ['ai', 'ra'], result: 'se' },
+        { ing: ['om', 'tek'], result: 'ki' },
+        { ing: ['om', 'sim'], result: 'ri' },
+        { ing: ['om', 'fi'], result: 'te' },
+        { ing: ['om', 'ai'], result: 'ne' },
+        { ing: ['om', 'ka'], result: 'an' },
+        { ing: ['ka', 'tek'], result: 'ma' },
+        { ing: ['ka', 'ta'], result: 'pa' },
+        { ing: ['ka', 'ai'], result: 'mi' },
+        { ing: ['ka', 'mi'], result: 'si' },
+        { ing: ['fi', 'tek'], result: 'so' },
+        { ing: ['vod', 'ai'], result: 'lu' },
+        { ing: ['ta', 'fi', 'so'], result: 'me' },
+        { ing: ['ta', 'ra'], result: 've' },
+        { ing: ['ta', 'ai'], result: 'mo' },
+        { ing: ['ai', 'ra'], result: 'fu' },
+        { ing: ['sim', 'ra'], result: 'lo' },
+        { ing: ['vod', 'ta'], result: 'xe' },
+        { ing: ['sim', 'ta'], result: 'da' },
+        { ing: ['sim', 'fi'], result: 'go' },
+        { ing: ['te', 'ta'], result: 'pe' },
+        { ing: ['pe', 'so'], result: 'to' },
+        { ing: ['pe', 'lu'], result: 're' },
+        { ing: ['an', 'an'], result: 'ko' },
+        { ing: ['ta', 'te'], result: 'po' },
+        { ing: ['po', 'no'], result: 'su' },
+        { ing: ['ka', 'te'], result: 'le' },
+        { ing: ['vod', 'se'], result: 'no' },
+        { ing: ['ka', 'so'], result: 'sa' },
+        { ing: ['ka', 'vod'], result: 'va' },
+        { ing: ['so', 'ta'], result: 'la' },
+        { ing: ['lu', 'mi'], result: 'pi' },
+        { ing: ['om', 'so'], result: 'vi' },
+        { ing: ['om', 'vod'], result: 'de' },
+        { ing: ['so', 'lu'], result: 'ru' },
+        { ing: ['tek', 'tek'], result: 'tektek' },
+        { ing: ['tek', 'ne'], result: 'so_open' },
+        { ing: ['vod', 'ne'], result: 'os_close' },
+        { ing: ['mo', 'an'], result: 'panda' }
+    ];
+
+    let state = {
+        discovered: new Set(['tek', 'sim', 'vod']),
+        slots: [null, null, null, null],
+        maxSlots: 3,
+        log: []
+    };
+
+    function getLevel(discoveredCount) {
+        if (discoveredCount >= 40) return 5;
+        if (discoveredCount >= 32) return 4;
+        if (discoveredCount >= 24) return 3;
+        if (discoveredCount >= 16) return 2;
+        if (discoveredCount >= 8) return 1;
+        return 0;
+    }
+
+    function updateLevelVisuals() {
+        const level = getLevel(state.discovered.size);
+        const fourthPlus = document.getElementById('fourth-plus');
+        const slot4 = document.getElementById('slot4');
+        if (level >= 3 && state.maxSlots < 4) {
+            state.maxSlots = 4;
+            fourthPlus.style.display = 'inline';
+            slot4.style.display = 'flex';
+            showToast("✨ The crucible expands! 4th slot unlocked.");
+        }
+        document.getElementById('crucible').style.borderColor = level >= 2 ? 'var(--gold)' : '#2a2a38';
+    }
+
+    function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            discovered: Array.from(state.discovered),
+            slots: state.slots,
+            maxSlots: state.maxSlots,
+            log: state.log
+        }));
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const data = JSON.parse(saved);
+            state.discovered = new Set(data.discovered);
+            state.slots = data.slots;
+            state.maxSlots = data.maxSlots || 3;
+            state.log = data.log || [];
+        }
+        updateLevelVisuals();
+        renderAll();
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function addDiscovery(resultId, ingredientsList) {
+        if (!state.discovered.has(resultId) && atoms[resultId]) {
+            state.discovered.add(resultId);
+            const a = atoms[resultId];
+            const recipeStr = ingredientsList.map(i => `${atoms[i].glyph} ${atoms[i].label}`).join(' + ');
+            state.log.unshift({
+                recipeText: `${recipeStr} → ${a.glyph} ${a.label}`,
+                meaning: a.meaning
+            });
+            if (state.log.length > 30) state.log.pop();
+            saveState();
+            renderAll();
+            showToast(`✨ ${a.glyph} ${a.label} — ${a.meaning}`);
+            return true;
+        }
+        return false;
+    }
+
+    function combine() {
+        const ingredients = state.slots.slice(0, state.maxSlots).filter(s => s !== null);
+        if (ingredients.length < 2) return;
+
+        // Collapse consecutive identical (tek+tek -> tektek)
+        const collapsed = [];
+        for (let i = 0; i < ingredients.length; i++) {
+            if (collapsed.length > 0 && collapsed[collapsed.length-1] === ingredients[i]) {
+                const intensified = ingredients[i] + ingredients[i];
+                if (atoms[intensified]) collapsed[collapsed.length-1] = intensified;
+                // else drop duplicate
+            } else {
+                collapsed.push(ingredients[i]);
+            }
+        }
+
+        for (let recipe of recipes) {
+            if (recipe.needs4Slots && state.maxSlots < 4) continue;
+            const recSorted = [...recipe.ing].sort();
+            const ingSorted = [...collapsed].sort();
+            if (recSorted.length === ingSorted.length && recSorted.every((v,i) => v === ingSorted[i])) {
+                if (addDiscovery(recipe.result, collapsed)) {
+                    for (let i = 0; i < state.maxSlots; i++) state.slots[i] = null;
+                    saveState();
+                    renderAll();
+                    return;
+                }
+            }
+        }
+        showToast("Nothing new. Try another combination.");
+    }
+
+    function clearSlots() {
+        for (let i = 0; i < state.maxSlots; i++) state.slots[i] = null;
+        saveState();
+        renderAll();
+    }
+
+    function hint() {
+        const undiscovered = recipes.filter(r => {
+            if (r.needs4Slots && state.maxSlots < 4) return false;
+            return !state.discovered.has(r.result);
+        });
+        if (undiscovered.length === 0) {
+            showToast("All atoms discovered! You are the alchemist.");
+            return;
+        }
+        const randomRecipe = undiscovered[Math.floor(Math.random() * undiscovered.length)];
+        for (let i = 0; i < randomRecipe.ing.length && i < state.maxSlots; i++) {
+            state.slots[i] = randomRecipe.ing[i];
+        }
+        saveState();
+        renderAll();
+        showToast("Hint: Try combining these.");
+    }
+
+    function resetGame() {
+        if (confirm("Reset all progress?")) {
+            state.discovered = new Set(['tek', 'sim', 'vod']);
+            for (let i = 0; i < 4; i++) state.slots[i] = null;
+            state.maxSlots = 3;
+            state.log = [];
+            saveState();
+            updateLevelVisuals();
+            renderAll();
+            showToast("Game reset.");
+        }
+    }
+
+    // Rendering
+    function renderCrucible() {
+        for (let i = 0; i < 4; i++) {
+            const slot = document.getElementById(`slot${i+1}`);
+            if (!slot) continue;
+            if (i < state.maxSlots) slot.style.display = 'flex';
+            else slot.style.display = 'none';
+            if (state.slots[i]) {
+                const a = atoms[state.slots[i]];
+                slot.innerHTML = `<div class="tile ${a.type}" style="cursor:default; width:100%; height:100%; justify-content:center;"><span class="glyph">${a.glyph}</span><span class="label">${a.label}</span></div>`;
+                slot.classList.add('occupied');
+            } else {
+                slot.innerHTML = '';
+                slot.classList.remove('occupied');
+            }
+        }
+        document.getElementById('combine-btn').disabled = state.slots.slice(0, state.maxSlots).filter(s => s !== null).length < 2;
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('atom-grid');
+        grid.innerHTML = '';
+        const sorted = Array.from(state.discovered).sort();
+        for (let atomId of sorted) {
+            const a = atoms[atomId];
+            if (!a) continue;
+            const el = document.createElement('div');
+            el.className = 'mini-tile';
+            el.innerHTML = `<span class="mglyph">${a.glyph}</span><span class="mlabel">${a.label}</span>`;
+            el.title = a.meaning;
+            el.draggable = true;
+            el.dataset.atom = atomId;
+            el.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', atomId);
+                el.style.opacity = '0.5';
+            });
+            el.addEventListener('dragend', () => el.style.opacity = '1');
+            grid.appendChild(el);
+        }
+        document.getElementById('count').textContent = state.discovered.size;
+        document.getElementById('total').textContent = Object.keys(atoms).length;
+    }
+
+    function renderLog() {
+        const logDiv = document.getElementById('log-area');
+        const showMeanings = document.getElementById('show-meanings').checked;
+        if (state.log.length === 0) {
+            logDiv.innerHTML = '<div class="log-entry">The crucible awaits.</div>';
+            return;
+        }
+        logDiv.innerHTML = state.log.map(entry => `
+            <div class="log-entry ${showMeanings ? 'show-meaning' : ''}">
+                <div>${entry.recipeText}</div>
+                <div class="meaning-text">${entry.meaning}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderEntryWords() {
+        const container = document.getElementById('entry-words-list');
+        const sorted = Object.keys(atoms).sort();
+        container.innerHTML = sorted.map(id => `<div class="atom-item">${atoms[id].glyph} ${atoms[id].label}<br><span style="font-size:0.5rem;">${atoms[id].meaning}</span></div>`).join('');
+    }
+
+    function renderPeriodicMenu() {
+        const container = document.getElementById('periodic-menu');
+        const cats = {
+            prime: 'Primes', elemental: 'Elementals', quintessence: 'Quintessence',
+            body: 'Body & Self', kin: 'Kin', world: 'World & Nature',
+            move: 'Movement', quality: 'Qualities', grammar: 'Grammar'
+        };
+        let html = '';
+        for (let [cat, label] of Object.entries(cats)) {
+            const list = Object.entries(atoms).filter(([_, a]) => a.cat === cat);
+            if (list.length === 0) continue;
+            html += `<div class="periodic-category"><h4>${label}</h4><div class="atom-list">`;
+            list.forEach(([id, a]) => { html += `<div class="atom-item">${a.glyph} ${a.label}</div>`; });
+            html += `</div></div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    function renderAll() {
+        renderCrucible();
+        renderGrid();
+        renderLog();
+        renderEntryWords();
+        renderPeriodicMenu();
+        updateLevelVisuals();
+    }
+
+    function setupDragDrop() {
+        const slots = document.querySelectorAll('.slot');
+        slots.forEach((slot, idx) => {
+            slot.addEventListener('dragover', e => e.preventDefault());
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                const atomId = e.dataTransfer.getData('text/plain');
+                if (atomId && state.slots[idx] === null && state.discovered.has(atomId) && idx < state.maxSlots) {
+                    state.slots[idx] = atomId;
+                    saveState();
+                    renderAll();
+                }
+            });
+        });
+    }
+
+    function init() {
+        loadState();
+        setupDragDrop();
+        document.getElementById('combine-btn').addEventListener('click', combine);
+        document.getElementById('clear-btn').addEventListener('click', clearSlots);
+        document.getElementById('hint-btn').addEventListener('click', hint);
+        document.getElementById('reset-game-btn').addEventListener('click', resetGame);
+        document.getElementById('show-meanings').addEventListener('change', () => renderLog());
+        document.querySelectorAll('.collapsible-header').forEach(h => {
+            h.addEventListener('click', () => h.parentElement.classList.toggle('open'));
+        });
+        const menuBtn = document.getElementById('menu-btn');
+        const drawer = document.getElementById('menu-drawer');
+        const closeDrawer = document.getElementById('close-drawer');
+        menuBtn.addEventListener('click', () => drawer.classList.add('open'));
+        closeDrawer.addEventListener('click', () => drawer.classList.remove('open'));
+        document.addEventListener('click', (e) => {
+            if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== menuBtn)
+                drawer.classList.remove('open');
+        });
+        renderAll();
+    }
+
+    init();
+</script>
+</body>
+</html>
