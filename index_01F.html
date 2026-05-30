@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Little Aire — the alchemy of knowing</title>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface2: #1a1a26;
+            --text: #c8c8d4;
+            --text-dim: #6a6a7a;
+            --tek: #7ec8a0;
+            --tek-glow: rgba(126, 200, 160, 0.3);
+            --sim: #7ea0c8;
+            --sim-glow: rgba(126, 160, 200, 0.3);
+            --vod: #a07ec8;
+            --vod-glow: rgba(160, 126, 200, 0.3);
+            --gold: #c8a050;
+            --gold-glow: rgba(200, 160, 80, 0.4);
+            --fire: #c86030;
+            --water: #5080c0;
+            --earth: #809050;
+            --air: #80b0b0;
+            --meme: #c05080;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.4rem;
+            overflow-x: hidden;
+        }
+
+        #stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--dur) ease-in-out infinite;
+            animation-delay: var(--delay);
+            opacity: 0;
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.06; }
+            50% { opacity: 0.45; }
+        }
+
+        #app {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            height: calc(100vh - 0.8rem);
+            height: calc(100dvh - 0.8rem);
+        }
+
+        header {
+            text-align: center;
+            padding: 0.2rem 0;
+            flex-shrink: 0;
+        }
+        header h1 {
+            font-size: 1.3rem;
+            font-weight: normal;
+            letter-spacing: 0.12em;
+            color: var(--gold);
+            text-shadow: 0 0 20px var(--gold-glow);
+            margin: 0;
+        }
+        header .subtitle {
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 0.06em;
+            font-style: italic;
+        }
+        header .counter {
+            font-size: 0.55rem;
+            color: var(--text-dim);
+        }
+        header .counter span {
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        #crucible {
+            background: var(--surface);
+            border: 1px solid #2a2a38;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.8rem 0.3rem;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+        .slot {
+            width: 62px;
+            height: 78px;
+            border: 2px dashed #2a2a38;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .slot.occupied {
+            border: 2px solid transparent;
+        }
+        .plus {
+            font-size: 0.9rem;
+            color: #3a3a4a;
+        }
+
+        .tile {
+            width: 58px;
+            height: 72px;
+            border-radius: 9px;
+            cursor: grab;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1px;
+            font-family: 'Georgia', serif;
+            transition: transform 0.15s, box-shadow 0.3s;
+            position: relative;
+            z-index: 10;
+        }
+        .tile:active { cursor: grabbing; }
+        .tile.dragging {
+            opacity: 0.35;
+            transform: scale(0.85);
+        }
+        .tile .glyph { font-size: 1.3rem; line-height: 1; }
+        .tile .label { font-size: 0.5rem; letter-spacing: 0.05em; text-transform: lowercase; }
+
+        .tile.tek { background: #1a2a20; border: 1px solid #3a5a40; color: var(--tek); box-shadow: 0 0 10px var(--tek-glow); }
+        .tile.sim { background: #1a202a; border: 1px solid #3a4a5a; color: var(--sim); box-shadow: 0 0 10px var(--sim-glow); }
+        .tile.vod { background: #1e1a2a; border: 1px solid #4a3a5a; color: var(--vod); box-shadow: 0 0 10px var(--vod-glow); }
+        .tile.elemental { background: #1a1a1a; border: 1px solid #3a3a3a; color: #c0c0c0; }
+        .tile.kin { background: #1a1a18; border: 1px solid #4a4a30; color: #c8c090; }
+        .tile.world { background: #181a1a; border: 1px solid #3a4a4a; color: #90b0b0; }
+        .tile.move { background: #1a1818; border: 1px solid #4a3a3a; color: #c8a090; }
+        .tile.quality { background: #181a18; border: 1px solid #3a4a3a; color: #a0c8a0; }
+        .tile.grammar { background: #1a1a20; border: 1px solid #4a4a5a; color: #a0a0c8; }
+
+        .btn-row {
+            display: flex;
+            gap: 0.35rem;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-family: 'Georgia', serif;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn:active { background: rgba(200, 160, 80, 0.15); }
+        .btn:disabled {
+            border-color: #3a3a3a;
+            color: #3a3a3a;
+            cursor: not-allowed;
+        }
+        #combine-btn { flex: 1; max-width: 140px; font-size: 0.85rem; }
+
+        .collapsible {
+            background: var(--surface);
+            border: 1px solid #2a2a38;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.45rem 0.7rem;
+            cursor: pointer;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+        }
+        .collapsible-header .arrow { transition: transform 0.3s; font-size: 0.55rem; }
+        .collapsible.open .collapsible-header .arrow { transform: rotate(180deg); }
+        .collapsible-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+        .collapsible.open .collapsible-body {
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        #log-area {
+            padding: 0 0.7rem 0.4rem;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            line-height: 1.45;
+        }
+        #log-area .entry {
+            padding: 0.18rem 0;
+            border-bottom: 1px solid #1a1a24;
+            animation: fadeIn 0.4s;
+        }
+        #log-area .entry .result { color: var(--gold); font-weight: bold; }
+
+        #atom-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            justify-content: center;
+            padding: 0.35rem 0.4rem 0.5rem;
+        }
+        .mini-tile {
+            width: 38px;
+            height: 44px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: var(--surface2);
+            border: 1px solid #2a2a38;
+            color: var(--text-dim);
+        }
+        .mini-tile:active { transform: scale(0.88); }
+        .mini-tile .mglyph { font-size: 0.8rem; }
+        .mini-tile .mlabel { font-size: 0.4rem; letter-spacing: 0.03em; }
+
+        #toast {
+            position: fixed;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--surface2);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 0.45rem 1rem;
+            border-radius: 14px;
+            font-size: 0.7rem;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+            text-align: center;
+            max-width: 90vw;
+        }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+<div id="stars"></div>
+<div id="toast"></div>
+<div id="app">
+    <header>
+        <h1>Little Aire</h1>
+        <p class="subtitle">tek · sim · vod — the alchemy of knowing</p>
+        <p class="counter"><span id="count">3</span> / <span id="total">72</span> atoms</p>
+    </header>
+
+    <div id="crucible">
+        <div class="slot" id="slot1"></div>
+        <span class="plus">+</span>
+        <div class="slot" id="slot2"></div>
+        <span class="plus">+</span>
+        <div class="slot" id="slot3"></div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn" id="combine-btn" disabled>Combine</button>
+        <button class="btn" id="clear-btn">Clear</button>
+    </div>
+
+    <div class="collapsible" id="log-collapsible">
+        <div class="collapsible-header">
+            <span>Discovery Log</span><span class="arrow">▼</span>
+        </div>
+        <div class="collapsible-body">
+            <div id="log-area"><div class="entry">The crucible awaits.</div></div>
+        </div>
+    </div>
+
+    <div class="collapsible open" id="grid-collapsible">
+        <div class="collapsible-header">
+            <span>Discovered Atoms</span><span class="arrow">▼</span>
+        </div>
+        <div class="collapsible-body">
+            <div id="atom-grid"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // LITTLE AIRE — 01F
+    // The crucible deepens. No explanations. Only alchemy.
+    // ============================================================
+
+    const STORAGE_KEY = 'little-aire-01f';
+    let state = {
+        discovered: new Set(['tek', 'sim', 'vod']),
+        slots: [null, null, null],
+        log: []
+    };
+
+    // Full atom database (72+ atoms, including hidden ones)
+    const atoms = {
+        // Primes
+        tek: { glyph: '⊙', label: 'tek', type: 'tek', cat: 'prime', meaning: 'witnessed' },
+        sim: { glyph: '⊞', label: 'sim', type: 'sim', cat: 'prime', meaning: 'simulated' },
+        vod: { glyph: '◈', label: 'vod', type: 'vod', cat: 'prime', meaning: 'void' },
+        // Elementals
+        ai: { glyph: '≈', label: 'ai', type: 'elemental', cat: 'elemental', meaning: 'air' },
+        ta: { glyph: '─', label: 'ta', type: 'elemental', cat: 'elemental', meaning: 'earth' },
+        ra: { glyph: '∿', label: 'ra', type: 'elemental', cat: 'elemental', meaning: 'water' },
+        fi: { glyph: '∆', label: 'fi', type: 'elemental', cat: 'elemental', meaning: 'fire' },
+        // Quintessence
+        meme: { glyph: '◉', label: 'meme', type: 'meme-tile', cat: 'quintessence', meaning: 'quintessence' },
+        // Body & Self
+        om: { glyph: '◡', label: 'om', type: 'elemental', cat: 'body', meaning: 'body' },
+        ka: { glyph: '♡', label: 'ka', type: 'kin', cat: 'body', meaning: 'heart' },
+        se: { glyph: '◎', label: 'se', type: 'world', cat: 'body', meaning: 'mind' },
+        ki: { glyph: '◑', label: 'ki', type: 'world', cat: 'body', meaning: 'eye' },
+        ri: { glyph: '♫', label: 'ri', type: 'world', cat: 'body', meaning: 'ear' },
+        te: { glyph: '⚒', label: 'te', type: 'world', cat: 'body', meaning: 'hand' },
+        ne: { glyph: '◇', label: 'ne', type: 'world', cat: 'body', meaning: 'mouth' },
+        an: { glyph: '☿', label: 'an', type: 'kin', cat: 'body', meaning: 'person' },
+        fa: { glyph: '✋', label: 'fa', type: 'world', cat: 'body', meaning: 'touch' },
+        // Kin
+        ma: { glyph: '◯', label: 'ma', type: 'kin', cat: 'kin', meaning: 'mother' },
+        pa: { glyph: '⌂', label: 'pa', type: 'kin', cat: 'kin', meaning: 'father' },
+        mi: { glyph: '◌', label: 'mi', type: 'kin', cat: 'kin', meaning: 'child' },
+        si: { glyph: '◍', label: 'si', type: 'kin', cat: 'kin', meaning: 'sibling' },
+        // World
+        so: { glyph: '☉', label: 'so', type: 'world', cat: 'world', meaning: 'sun' },
+        lu: { glyph: '☾', label: 'lu', type: 'world', cat: 'world', meaning: 'moon' },
+        me: { glyph: '▲', label: 'me', type: 'world', cat: 'world', meaning: 'mountain' },
+        ve: { glyph: '∪', label: 've', type: 'world', cat: 'world', meaning: 'valley' },
+        mo: { glyph: '✦', label: 'mo', type: 'world', cat: 'world', meaning: 'forest' },
+        fu: { glyph: '≋', label: 'fu', type: 'world', cat: 'world', meaning: 'blur' },
+        lo: { glyph: '↻', label: 'lo', type: 'world', cat: 'world', meaning: 'loop' },
+        xe: { glyph: '◻', label: 'xe', type: 'vod', cat: 'world', meaning: 'ghost' },
+        da: { glyph: '▤', label: 'da', type: 'sim', cat: 'world', meaning: 'data' },
+        go: { glyph: '⧉', label: 'go', type: 'sim', cat: 'world', meaning: 'code' },
+        // Movement
+        pe: { glyph: '╱', label: 'pe', type: 'move', cat: 'move', meaning: 'path' },
+        to: { glyph: '→', label: 'to', type: 'move', cat: 'move', meaning: 'toward' },
+        re: { glyph: '←', label: 're', type: 'move', cat: 'move', meaning: 'from' },
+        ko: { glyph: '╔╗', label: 'ko', type: 'move', cat: 'move', meaning: 'together' },
+        po: { glyph: '□', label: 'po', type: 'move', cat: 'move', meaning: 'container' },
+        su: { glyph: '──', label: 'su', type: 'move', cat: 'move', meaning: 'surface' },
+        le: { glyph: '✉', label: 'le', type: 'move', cat: 'move', meaning: 'gift' },
+        no: { glyph: '∅', label: 'no', type: 'vod', cat: 'move', meaning: 'not' },
+        // Qualities
+        sa: { glyph: '✓', label: 'sa', type: 'quality', cat: 'quality', meaning: 'good' },
+        va: { glyph: '✗', label: 'va', type: 'quality', cat: 'quality', meaning: 'bad' },
+        la: { glyph: '⬆', label: 'la', type: 'quality', cat: 'quality', meaning: 'large' },
+        pi: { glyph: '⬇', label: 'pi', type: 'quality', cat: 'quality', meaning: 'small' },
+        vi: { glyph: '❦', label: 'vi', type: 'quality', cat: 'quality', meaning: 'life' },
+        de: { glyph: '✝', label: 'de', type: 'quality', cat: 'quality', meaning: 'death' },
+        ru: { glyph: '⌛', label: 'ru', type: 'quality', cat: 'quality', meaning: 'time' },
+        // Intensified forms (double-witness)
+        tektek: { glyph: '⊙⊙', label: 'tektek', type: 'tek', cat: 'prime', meaning: 'double witness' },
+        lala: { glyph: '⬆⬆', label: 'lala', type: 'quality', cat: 'quality', meaning: 'vast' },
+        pipi: { glyph: '⬇⬇', label: 'pipi', type: 'quality', cat: 'quality', meaning: 'tiny' },
+        koko: { glyph: '╔╗╔╗', label: 'koko', type: 'move', cat: 'move', meaning: 'fused' },
+        // Scoping markers (rare discoveries)
+        so: { glyph: '[', label: 'so', type: 'grammar', cat: 'grammar', meaning: 'open' },
+        os: { glyph: ']', label: 'os', type: 'grammar', cat: 'grammar', meaning: 'close' }
+    };
+
+    // Recipe list (alchemical combinations)
+    const recipes = [
+        { ing: ['tek', 'sim'], result: 'ai' },
+        { ing: ['tek', 'vod'], result: 'ta' },
+        { ing: ['sim', 'vod'], result: 'ra' },
+        { ing: ['tek', 'sim', 'vod'], result: 'fi' },
+        { ing: ['ai', 'ta', 'ra', 'fi'], result: 'meme' },
+        { ing: ['ta', 'fi'], result: 'om' },
+        { ing: ['ai', 'fi'], result: 'ka' },
+        { ing: ['ai', 'ra'], result: 'se' },
+        { ing: ['om', 'tek'], result: 'ki' },
+        { ing: ['om', 'sim'], result: 'ri' },
+        { ing: ['om', 'fi'], result: 'te' },
+        { ing: ['om', 'ai'], result: 'ne' },
+        { ing: ['om', 'ka'], result: 'an' },
+        { ing: ['ka', 'tek'], result: 'ma' },
+        { ing: ['ka', 'ta'], result: 'pa' },
+        { ing: ['ka', 'ai'], result: 'mi' },
+        { ing: ['ka', 'mi'], result: 'si' },
+        { ing: ['fi', 'tek'], result: 'so' },
+        { ing: ['vod', 'ai'], result: 'lu' },
+        { ing: ['ta', 'fi', 'so'], result: 'me' },
+        { ing: ['ta', 'ra'], result: 've' },
+        { ing: ['ta', 'ai'], result: 'mo' },
+        { ing: ['ai', 'ra'], result: 'fu' },
+        { ing: ['sim', 'ra'], result: 'lo' },
+        { ing: ['vod', 'ta'], result: 'xe' },
+        { ing: ['sim', 'ta'], result: 'da' },
+        { ing: ['sim', 'fi'], result: 'go' },
+        { ing: ['te', 'ta'], result: 'pe' },
+        { ing: ['pe', 'so'], result: 'to' },
+        { ing: ['pe', 'lu'], result: 're' },
+        { ing: ['an', 'an'], result: 'ko' },
+        { ing: ['ta', 'te'], result: 'po' },
+        { ing: ['po', 'no'], result: 'su' },
+        { ing: ['ka', 'te'], result: 'le' },
+        { ing: ['vod', 'se'], result: 'no' },
+        { ing: ['ka', 'so'], result: 'sa' },
+        { ing: ['ka', 'vod'], result: 'va' },
+        { ing: ['so', 'ta'], result: 'la' },
+        { ing: ['lu', 'mi'], result: 'pi' },
+        { ing: ['om', 'so'], result: 'vi' },
+        { ing: ['om', 'vod'], result: 'de' },
+        { ing: ['so', 'lu'], result: 'ru' },
+        { ing: ['te', 'fa'], result: 'tektek' },
+        { ing: ['la', 'la'], result: 'lala' },
+        { ing: ['pi', 'pi'], result: 'pipi' },
+        { ing: ['ko', 'ko'], result: 'koko' },
+        { ing: ['tek', 'ne'], result: 'so' },
+        { ing: ['vod', 'ne'], result: 'os' }
+    ];
+
+    function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            discovered: Array.from(state.discovered),
+            slots: state.slots,
+            log: state.log
+        }));
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            const data = JSON.parse(saved);
+            state.discovered = new Set(data.discovered);
+            state.slots = data.slots;
+            state.log = data.log || [];
+        }
+        renderAll();
+    }
+
+    function addDiscovery(atomId) {
+        if (!state.discovered.has(atomId) && atoms[atomId]) {
+            state.discovered.add(atomId);
+            const msg = `Discovered ${atoms[atomId].glyph} ${atoms[atomId].label}`;
+            state.log.unshift(msg);
+            if (state.log.length > 30) state.log.pop();
+            saveState();
+            renderAll();
+            showToast(msg);
+            return true;
+        }
+        return false;
+    }
+
+    function combine() {
+        const ingredients = state.slots.filter(s => s !== null);
+        if (ingredients.length < 2) return;
+
+        // Check for consecutive identical (collapse rule)
+        const collapsed = [];
+        for (let i = 0; i < ingredients.length; i++) {
+            if (collapsed.length > 0 && collapsed[collapsed.length-1] === ingredients[i]) {
+                // collapse identical adjacent into intensified form
+                const intensified = ingredients[i] + ingredients[i];
+                if (atoms[intensified]) {
+                    collapsed[collapsed.length-1] = intensified;
+                }
+                // else just skip the duplicate
+            } else {
+                collapsed.push(ingredients[i]);
+            }
+        }
+
+        // Try to find recipe
+        for (let recipe of recipes) {
+            const recSorted = [...recipe.ing].sort();
+            const ingSorted = [...collapsed].sort();
+            if (recSorted.length === ingSorted.length && recSorted.every((v,i) => v === ingSorted[i])) {
+                if (addDiscovery(recipe.result)) {
+                    state.slots = [null, null, null];
+                    saveState();
+                    renderAll();
+                    return;
+                }
+            }
+        }
+        showToast("Nothing new. Try another combination.");
+    }
+
+    function clearSlots() {
+        state.slots = [null, null, null];
+        saveState();
+        renderAll();
+    }
+
+    function renderCrucible() {
+        for (let i = 0; i < 3; i++) {
+            const slot = document.getElementById(`slot${i+1}`);
+            if (state.slots[i]) {
+                const a = atoms[state.slots[i]];
+                slot.innerHTML = `<div class="tile ${a.type}" style="cursor:default; width:100%; height:100%; justify-content:center;"><span class="glyph">${a.glyph}</span><span class="label">${a.label}</span></div>`;
+                slot.classList.add('occupied');
+            } else {
+                slot.innerHTML = '';
+                slot.classList.remove('occupied');
+            }
+        }
+        document.getElementById('combine-btn').disabled = state.slots.filter(s => s !== null).length < 2;
+    }
+
+    function renderGrid() {
+        const grid = document.getElementById('atom-grid');
+        grid.innerHTML = '';
+        const sorted = Array.from(state.discovered).sort();
+        for (let atomId of sorted) {
+            const a = atoms[atomId];
+            if (!a) continue;
+            const el = document.createElement('div');
+            el.className = 'mini-tile';
+            el.innerHTML = `<span class="mglyph">${a.glyph}</span><span class="mlabel">${a.label}</span>`;
+            el.title = a.meaning;
+            el.draggable = true;
+            el.dataset.atom = atomId;
+            el.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', atomId);
+                el.style.opacity = '0.5';
+            });
+            el.addEventListener('dragend', () => el.style.opacity = '1');
+            el.addEventListener('touchstart', e => {
+                const touch = e.touches[0];
+                const id = atomId;
+                el._touchData = id;
+                el.style.opacity = '0.5';
+                // Simple touch drag simulation
+                const onTouchMove = (moveEvent) => {
+                    moveEvent.preventDefault();
+                    const targetSlot = document.elementFromPoint(moveEvent.touches[0].clientX, moveEvent.touches[0].clientY)?.closest('.slot');
+                    if (targetSlot && !targetSlot.classList.contains('occupied')) {
+                        targetSlot.style.borderColor = 'var(--gold)';
+                    }
+                };
+                const onTouchEnd = (endEvent) => {
+                    const targetSlot = document.elementFromPoint(endEvent.changedTouches[0].clientX, endEvent.changedTouches[0].clientY)?.closest('.slot');
+                    if (targetSlot && !targetSlot.classList.contains('occupied')) {
+                        const slotIdx = parseInt(targetSlot.id.replace('slot', '')) - 1;
+                        if (state.slots[slotIdx] === null) {
+                            state.slots[slotIdx] = id;
+                            saveState();
+                            renderAll();
+                        }
+                    }
+                    document.removeEventListener('touchmove', onTouchMove);
+                    document.removeEventListener('touchend', onTouchEnd);
+                    el.style.opacity = '1';
+                    if (targetSlot) targetSlot.style.borderColor = '';
+                };
+                document.addEventListener('touchmove', onTouchMove, { passive: false });
+                document.addEventListener('touchend', onTouchEnd);
+            });
+            grid.appendChild(el);
+        }
+        document.getElementById('count').textContent = state.discovered.size;
+        document.getElementById('total').textContent = Object.keys(atoms).length;
+    }
+
+    function renderLog() {
+        const logDiv = document.getElementById('log-area');
+        if (state.log.length === 0) {
+            logDiv.innerHTML = '<div class="entry">The crucible awaits.</div>';
+        } else {
+            logDiv.innerHTML = state.log.slice(0, 20).map(msg => `<div class="entry">${msg}</div>`).join('');
+        }
+    }
+
+    function renderAll() {
+        renderCrucible();
+        renderGrid();
+        renderLog();
+    }
+
+    // Drag & drop for desktop
+    function setupDragDrop() {
+        const slots = document.querySelectorAll('.slot');
+        slots.forEach((slot, idx) => {
+            slot.addEventListener('dragover', e => e.preventDefault());
+            slot.addEventListener('dragenter', e => e.preventDefault());
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                const atomId = e.dataTransfer.getData('text/plain');
+                if (atomId && state.slots[idx] === null && state.discovered.has(atomId)) {
+                    state.slots[idx] = atomId;
+                    saveState();
+                    renderAll();
+                }
+            });
+        });
+    }
+
+    // Initialize
+    function init() {
+        loadState();
+        setupDragDrop();
+        document.getElementById('combine-btn').addEventListener('click', combine);
+        document.getElementById('clear-btn').addEventListener('click', clearSlots);
+        document.querySelectorAll('.collapsible-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.parentElement.classList.toggle('open');
+            });
+        });
+        renderAll();
+    }
+
+    init();
+</script>
+</body>
+</html>
