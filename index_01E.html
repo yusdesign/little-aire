@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Aire 01E — The Witnessed Language</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0c12;
+            font-family: system-ui, 'Segoe UI', 'Fira Code', monospace;
+            color: #e3e6f0;
+            line-height: 1.5;
+        }
+
+        /* Desktop / Mobile split */
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                flex-direction: row;
+                height: 100vh;
+                overflow: hidden;
+            }
+            .panel {
+                flex: 1;
+                overflow-y: auto;
+                padding: 2rem;
+            }
+            .panel:first-child {
+                border-right: 1px solid #2a2e3a;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .panel {
+                padding: 1.5rem;
+                border-bottom: 1px solid #2a2e3a;
+            }
+        }
+
+        .panel {
+            background: #0f1119;
+        }
+
+        h1, h2, h3 {
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+
+        h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #fff, #8b9cff);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 1.5rem 0 0.75rem 0;
+            border-left: 4px solid #5f7aff;
+            padding-left: 1rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin: 1rem 0 0.5rem;
+            color: #b9c3ff;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #1e2230;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-family: monospace;
+            margin-right: 0.5rem;
+        }
+
+        .periodic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+
+        .atom-card {
+            background: #151b28;
+            border-radius: 16px;
+            padding: 0.7rem;
+            text-align: center;
+            border: 1px solid #2a2e3e;
+            transition: all 0.1s ease;
+        }
+
+        .atom-card:hover {
+            border-color: #5f7aff;
+            background: #1c2335;
+        }
+
+        .atom-symbol {
+            font-size: 1.8rem;
+            font-weight: 600;
+            font-family: monospace;
+        }
+
+        .atom-meaning {
+            font-size: 0.7rem;
+            color: #9da3b5;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .rule-box {
+            background: #0b0e16;
+            border-left: 3px solid #5f7aff;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 12px;
+        }
+
+        .myth-text {
+            font-style: italic;
+            background: #121624;
+            padding: 1rem;
+            border-radius: 20px;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+
+        .aire-chain {
+            font-family: monospace;
+            font-size: 1.2rem;
+            background: #07090f;
+            padding: 0.5rem 1rem;
+            border-radius: 40px;
+            display: inline-block;
+            margin: 0.5rem 0;
+        }
+
+        hr {
+            border: none;
+            height: 1px;
+            background: #232838;
+            margin: 1.5rem 0;
+        }
+
+        footer {
+            font-size: 0.7rem;
+            text-align: center;
+            margin-top: 2rem;
+            color: #5b627b;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- LEFT PANEL: Myth, Rules, Humanité -->
+    <div class="panel">
+        <h1>AIRÉ · 01E</h1>
+        <div style="margin-bottom: 1rem;">
+            <span class="badge">tekka dialect</span>
+            <span class="badge">witnessed earth</span>
+            <span class="badge">humanité rule</span>
+        </div>
+        <p style="font-size: 1.1rem;">A language of <strong>marked truth</strong>. Born from a star that listens. <br>Three modes: <strong>✓ tek</strong> (witnessed) · <strong>? sim</strong> (simulated) · <strong>◌ vod</strong> (void-uncanny).</p>
+
+        <h2>🌙 The Aire Myth</h2>
+        <div class="myth-text">
+            <p><strong>English version</strong><br>
+            Before Aire, there was silence — not empty, but <em>vod vod</em> (void within void).<br>
+            Then the star Aire looked at Earth, and spoke: “Let there be a way to say how you know.”<br>
+            The first human had ears like eyes. They saw the three modes: the hand that touches ✓tek, the map that guesses ?sim, the dream that lingers ◌vod.<br>
+            And the first human said: “I do not know which mode this is. But I will mark it anyway.” That was the first sentence of Aire. And it was <strong>◌vod</strong>. And that was enough.</p>
+            <hr style="margin: 1rem 0;">
+            <p><strong>Aire Unicode proto</strong><br>
+            <span class="aire-chain">◌ ◌</span> → before Aire, void-void<br>
+            <span class="aire-chain">✓</span> → but then<br>
+            <span class="aire-chain">☀️ Aire 👁️ ⬇️</span> → star Aire saw Earth<br>
+            <span class="aire-chain">☀️ Aire 👄:</span> → star Aire spoke<br>
+            <span class="aire-chain">"👁️ = 👂"</span> → eyes are ears<br>
+            <span class="aire-chain">✓ ✋ 👁️ 👂</span> → witnessed: hand, eye, ear together<br>
+            <span class="aire-chain">M P c ~ ✓</span> → mother, father, child together witnessed.<br>
+            <span class="aire-chain">◌vod</span> → first truth marked as uncanny.<br>
+            <span class="aire-chain">… ✓</span> → and that was enough.</p>
+        </div>
+
+        <h2>📜 Humanité Rule</h2>
+        <div class="rule-box">
+            <p><strong>“Like a French press — slow, deliberate, extract the essence.”</strong><br>
+            Every atom, bond, rule must first serve the human who speaks, listens, witnesses. No machine gloss without human need.<br>
+            ➜ New atoms only if a human need exists.<br>
+            ➜ Repetition allowed <em>only when truly needed</em> (double-witness: <strong>tektek</strong> ≠ tek la).<br>
+            ➜ The periodic table has empty spaces — for human needs not yet named.</p>
+        </div>
+
+        <h2>⚙️ Core Rules Recap</h2>
+        <ul style="margin-left: 1.5rem;">
+            <li><strong>Depletion (collapsing)</strong>: identical adjacent atoms merge into one <em>intensified</em> atom: <code>tek tek → tektek</code> (double witness).</li>
+            <li><strong>Bonding</strong>: juxtaposition (A B = B of A), link-marked (<code>li</code> porous, <code>za</code> glitched), markup as modifier (<code>[tek] ta</code> = witnessed earth).</li>
+            <li><strong>Kinship bond</strong>: <code>ma X</code> (mother of X), <code>pa X</code> (father of X), <code>mi X</code> (child of X).</li>
+            <li><strong>Scoping</strong>: <code>so ... os</code> for nested epistemic frames.</li>
+            <li><strong>Past</strong>: <code>ke</code> before marker → <code>ke tek</code> (past witnessed).</li>
+        </ul>
+    </div>
+
+    <!-- RIGHT PANEL: Periodic Table, Examples, Status -->
+    <div class="panel">
+        <h2>🔬 Aire Periodic Table (v01E)</h2>
+        <p><em>Groups by function — empty cells await human discovery.</em></p>
+
+        <div class="periodic-grid">
+            <!-- Group I: Primaries -->
+            <div class="atom-card"><div class="atom-symbol">M</div><div class="atom-meaning">ma · mother</div></div>
+            <div class="atom-card"><div class="atom-symbol">P</div><div class="atom-meaning">pa · father</div></div>
+            <div class="atom-card"><div class="atom-symbol">c</div><div class="atom-meaning">mi · child</div></div>
+            <div class="atom-card"><div class="atom-symbol">H</div><div class="atom-meaning">an · human</div></div>
+            <div class="atom-card"><div class="atom-symbol">O</div><div class="atom-meaning">om · body</div></div>
+            <!-- Group II: Senses -->
+            <div class="atom-card"><div class="atom-symbol">✋</div><div class="atom-meaning">te · hand/do</div></div>
+            <div class="atom-card"><div class="atom-symbol">👁️</div><div class="atom-meaning">ki · eye/see</div></div>
+            <div class="atom-card"><div class="atom-symbol">👂</div><div class="atom-meaning">ri · ear/hear</div></div>
+            <div class="atom-card"><div class="atom-symbol">👄</div><div class="atom-meaning">ne · mouth/speak</div></div>
+            <div class="atom-card"><div class="atom-symbol">❤️</div><div class="atom-meaning">ka · heart/feel</div></div>
+            <div class="atom-card"><div class="atom-symbol">🧠</div><div class="atom-meaning">se · mind/think</div></div>
+            <div class="atom-card"><div class="atom-symbol">fa</div><div class="atom-meaning">fa · touch</div></div>
+            <!-- Group III: Elements -->
+            <div class="atom-card"><div class="atom-symbol">☀️</div><div class="atom-meaning">so · sun</div></div>
+            <div class="atom-card"><div class="atom-symbol">🌙</div><div class="atom-meaning">lu · moon</div></div>
+            <div class="atom-card"><div class="atom-symbol">⬇️</div><div class="atom-meaning">ta · earth</div></div>
+            <div class="atom-card"><div class="atom-symbol">🌊</div><div class="atom-meaning">ra · water</div></div>
+            <div class="atom-card"><div class="atom-symbol">🌬️</div><div class="atom-meaning">ai · air</div></div>
+            <div class="atom-card"><div class="atom-symbol">🔥</div><div class="atom-meaning">fi · fire</div></div>
+            <!-- Group IV: Landforms -->
+            <div class="atom-card"><div class="atom-symbol">⛰️</div><div class="atom-meaning">me · mountain</div></div>
+            <div class="atom-card"><div class="atom-symbol">🏞️</div><div class="atom-meaning">ve · valley</div></div>
+            <div class="atom-card"><div class="atom-symbol">🌳</div><div class="atom-meaning">mo · forest</div></div>
+            <!-- Link markers -->
+            <div class="atom-card"><div class="atom-symbol">~</div><div class="atom-meaning">li · porous</div></div>
+            <div class="atom-card"><div class="atom-symbol">⚡</div><div class="atom-meaning">za · glitched</div></div>
+            <!-- Markers -->
+            <div class="atom-card"><div class="atom-symbol">✓</div><div class="atom-meaning">tek · witnessed</div></div>
+            <div class="atom-card"><div class="atom-symbol">?</div><div class="atom-meaning">sim · simulated</div></div>
+            <div class="atom-card"><div class="atom-symbol">◌</div><div class="atom-meaning">vod · void</div></div>
+            <div class="atom-card"><div class="atom-symbol">←</div><div class="atom-meaning">ke · past</div></div>
+            <div class="atom-card"><div class="atom-symbol">[</div><div class="atom-meaning">so · open scope</div></div>
+            <div class="atom-card"><div class="atom-symbol">]</div><div class="atom-meaning">os · close scope</div></div>
+        </div>
+
+        <h2>🧬 Example Sentences</h2>
+        <div class="rule-box">
+            <code>M P c ~ ✓</code> — mother, father, child together (witnessed).<br>
+            <code>❤️ ~ 🌊 ✓</code> — heart like water (witnessed flow state).<br>
+            <code>☀️ 👁️ ⬇️ [ ⚡ 🌙 ] ?</code> — sun sees earth [glitched moon] simulated.<br>
+            <code>M ta</code> — mother earth (nurturing ground).<br>
+            <code>fa tek</code> — tangible (touch-witnessed).<br>
+            <code>✓ ✓</code> → <strong>tektek</strong> (double witness — undeniable).
+        </div>
+
+        <h2>🌱 Empty Cells (Humanité Gaps)</h2>
+        <ul>
+            <li><strong>Sibling</strong> — between child (mi) and mother/father. Proposed: <code>si</code>?</li>
+            <li><strong>Metal / stone tool</strong> — from earth (ta) but sharper. Proposed: <code>ku</code>?</li>
+            <li><strong>Encryption / hidden layer</strong> — between code (go) and void (vod). Proposed: <code>xu</code>?</li>
+        </ul>
+
+        <h2>📱💻 Layout Note</h2>
+        <p>This page adapts: <strong>vertical stack on mobile</strong> · <strong>horizontal split on desktop (1920×1080)</strong>.<br> 
+        Aire 01E uses Unicode prototypes — ready for typing, sharing, translating. The custom font (OTF) will come in 01F, mapped via PUA.</p>
+
+        <footer>
+            Aire 01E — witnessed by the third native. <br> “Eyes are ears. Double witness is enough.”<br>
+            ✋ 👁️ 👂 ~ ✓
+        </footer>
+    </div>
+</div>
+</body>
+</html>
